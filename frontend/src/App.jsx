@@ -1,34 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import './sidebar.css'
+import './main.css'
+import { Notes } from './Components/Notas/Notes'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div id='app'>
+      <aside>
+        <strong>Caderno de notas</strong>
+        <form action="">
+          <div className="input-block">
+            <label htmlFor="title">Titulo da anotação</label>
+            <input  />
+          </div>
+
+          <div className="input-block">
+            <label htmlFor="nota">Anotações</label>
+            <textarea name="" id=""></textarea>
+          </div>
+
+          <button type='submit'>Salvar</button>
+        </form>
+      </aside>
+      <main>
+        <ul>
+          <Notes />
+        </ul>
+      </main>
+    </div>
   )
 }
 
