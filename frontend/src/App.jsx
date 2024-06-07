@@ -1,30 +1,69 @@
+//Import de Arquivos Locais
 import './App.css'
 import './sidebar.css'
 import './main.css'
-import './Components/Notas/RadioBtn'
 import api from './services/api'
 
+//Import de Componentes
 import { Notes } from './Components/Notas/Notes'
 import {  useState, useEffect } from 'react'
-import { RadioBtn } from './Components/Notas/RadioBtn'
+import { RadioBtn } from './Components/RadioButton/RadioBtn'
 
 function App() {
+  const [selectedValue, setSelectedValue] = useState('all');
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [allNotes, setAllNotes] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
   
   useEffect(()=> {
-    async function getAllNotes() {
-      const response = await api.get('/annotations');
+    getAllNotes()  
+  }, [])//Faz a chamada na API para puxar todas as notas
+  
+  async function getAllNotes() {
+    const response = await api.get('/annotations');
 
-      setAllNotes(response.data)
+    setAllNotes(response.data)
+  }
 
+  const loadNotes = async (options) => {
+    const params = {priority: options};
+    const res = await api.get("/priorities", {params})
+
+    if(res){
+      setAllNotes(res.data)
+    }
+  }
+
+  const handleChange = (value) => {
+    setSelectedValue(value);
+
+    if(value !== 'all'){
+      loadNotes(value)
+    } else{
+      getAllNotes()
+    }
+  }
+
+  const handleDelete = async (id)=> {
+
+    const deletedNote = await api.delete(`/annotations/${id}`);
+
+    if(deletedNote.status === 200) {
+      setAllNotes(allNotes.filter(note => note._id !== id))
     }
 
-    getAllNotes()
+  }
 
-  }, [])
+  async function handleChangePriority(id) {
+    const changePriority = await api.post(`/priorities/${id}`);
+
+    if(changePriority && selectedValue !== 'all') {
+      loadNotes(selectedValue);
+    }else if(changePriority){
+      getAllNotes(); 
+    }
+  }
 
   const  handleSubmit = async (e) =>{
     e.preventDefault()
@@ -38,7 +77,14 @@ function App() {
     setTitle('')
     setNotes('')
 
-    setAllNotes([...allNotes, response.data])
+    if(selectedValue !== "all"){
+      getAllNotes()
+    }else{
+      setAllNotes([...allNotes, response.data])
+    }
+
+    setSelectedValue('all')
+
   }
 
   useEffect(()=> {
@@ -54,6 +100,7 @@ function App() {
             <label htmlFor="title">Titulo da anotação</label>
             <input 
               required
+              maxLength={30}
               value={title}
               onChange={e => setTitle(e.target.value)}
               
@@ -77,14 +124,22 @@ function App() {
             Salvar
           </button>
 
-          <RadioBtn />
+          <RadioBtn
+            handleChange={(e) => handleChange(e.target.value)}
+            selectedValue={selectedValue}
+          />
         </form>
       </aside>
       <main>
         <ul>
           {
             allNotes.map(note => (
-              <Notes key={note.id} note={note} />
+              <Notes 
+                key={note._id} 
+                note={note}
+                handleDelete = {handleDelete}
+                handleChangePriority= {handleChangePriority}
+                 />
             ))
           }
         </ul>
